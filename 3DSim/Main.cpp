@@ -5,21 +5,21 @@
 #include <iostream>
 #include <thread>
 #include <chrono>
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow * window);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 
 float xPosInWindow(float x)
 {
-    return (WINDOW_SIZE/2) + (x * 4);
+    return (WINDOW_SIZE / 2) + (x * 4);
 }
 
 float yPosInWindow(float y)
 {
-   // std::cout << "yposinwindow "<<(WINDOW_SIZE / 2) - (y * 1) << '\n';
-    return (WINDOW_SIZE *.2) + (y * 4);
+    // std::cout << "yposinwindow "<<(WINDOW_SIZE / 2) - (y * 1) << '\n';
+    return (WINDOW_SIZE * .2) + (y * 4);
 }
 float NDC(float n) {
-   // std::cout << "ndc " << n / WINDOW_SIZE * 2 - 1 << '\n';
+    // std::cout << "ndc " << n / WINDOW_SIZE * 2 - 1 << '\n';
     return n / WINDOW_SIZE * 2 - 1;
 }
 int main() {
@@ -43,7 +43,7 @@ int main() {
 
     //glfwSwapInterval(1);
     const GLFWvidmode* monitor = glfwGetVideoMode(glfwGetPrimaryMonitor());
-    glfwSetWindowPos(window, (monitor->width-WINDOW_SIZE) / 2, (monitor->height-WINDOW_SIZE) / 2);
+    glfwSetWindowPos(window, (monitor->width - WINDOW_SIZE) / 2, (monitor->height - WINDOW_SIZE) / 2);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -53,25 +53,25 @@ int main() {
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 
-    glClearDepth(1.0f);                
-    glEnable(GL_DEPTH_TEST);                     
-    glDepthFunc(GL_LEQUAL);        
-    glShadeModel(GL_SMOOTH);   // Enable smooth shading
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
+    //glClearDepth(1.0f);
+    glEnable(GL_DEPTH_TEST);
+   // glDepthFunc(GL_LEQUAL);
+    //glShadeModel(GL_SMOOTH);   // Enable smooth shading
+    //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
 
     Particle* p = new Particle();
     p->mass = 5.0f;
-    p->pos = Vector3f(0.0f,100.0f, 0.0f);
-    p->vel = Vector3f(10.0f, 0.0f, 30.0f);
+    p->pos = Vector3f(0.0f, 100.0f, 0.0f);
+    p->vel = Vector3f(10.0f, 0.0f, 10.0f);
 
     float lastUpdateTime = 0.0f;  // number of seconds since the last loop
     float lastFrameTime = 0.0f;   // number of seconds since the last frame
     float deltaTime = 0.046f;
     float t = 0;
     int n = 0;
-    while (!glfwWindowShouldClose(window)&& t<=5)
+    while (!glfwWindowShouldClose(window) && t <= 5)
     {
-       // std::cout << "time: " << t<<'\n';
+        // std::cout << "time: " << t<<'\n';
         static int timePreviousFrame;
         int timeToWait = 46 - ((int)glfwGetTime() - timePreviousFrame);
         if (timeToWait > 0)
@@ -90,17 +90,17 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glLoadIdentity();                 // Reset the model-view matrix
 
-        gluLookAt(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+        gluLookAt(-100.0, 20.0, 1.0, 0.0, 20.0, 0.0, 0.0, 0.0, 1.0);
 
         glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
-        glBegin(GL_POINTS);                   
-        glVertex3f(0.0f, 0.5f, 0.0f);        
+        glBegin(GL_POINTS);
+        glVertex3f(0.0f, 0.0f, 0.0f);
         glEnd();
-        
+
         glColor3f(1.0f, 1.0f, 1.0f);          // Set The Color To white
         glBegin(GL_POINTS);
-        std::cout << NDC(xPosInWindow(p->pos.z)) << '\n';
-        glVertex3f(NDC(xPosInWindow(p->pos.x)), NDC(yPosInWindow(p->pos.y)), NDC(xPosInWindow(p->pos.z)));
+        std::cout << p->pos.x << ' '<< p->pos.y <<' '<< p->pos.z << '\n';
+        glVertex3f(p->pos.x, p->pos.y, p->pos.z);
         glEnd();
 
         //glColor3f(1.0f, 1.0f, 1.0f);          // Set The Color To white
@@ -109,7 +109,7 @@ int main() {
         //glVertex3f(-1.0f, -1.0f, -4.0f);              // Bottom Left
         //glVertex3f(1.0f, -1.0f, -4.0f);              // Bottom Right
         //glEnd();
-        
+
         p->addForce(Vector3f(0.0f, -10.0f * p->mass, 0.0f));
         p->addForce(p->vel * -0.4f); //air resitance -dV
         p->integrate(deltaTime);
@@ -130,7 +130,7 @@ int main() {
     }
     glfwTerminate();
 
-	return 0;
+    return 0;
 }
 
 
@@ -145,6 +145,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glFrustum(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+    gluPerspective(45.0f,1,0.01,100);
     glMatrixMode(GL_MODELVIEW);
 }

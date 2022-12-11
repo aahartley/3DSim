@@ -1,114 +1,186 @@
-/*
-   Sample OpenGL/GLUT Program to Draw a Square
- 
-   Program opens a window and draws a colored square on a white background
-   Colors cycle through R, Y, G, C, B, M with 'c' keypress
-   Program quits when either 'q' or ESC are pressed
+#define TO_RADIANS 3.141592/180.0
+#include <GL/freeglut.h>
+#include <iostream>
 
-   CPSC 817            Donald H. House         8/21/2008
 
-   usage: glsquare
-*/
+// angles and starting position
+float xangle = 0.0f, yangle = 1.0f, zangle = -1.0f;
 
-#include <cstdlib>
+// XYZ position of the camera
+float  x = 0.0f, y = 1.0f, z = 5.0f;
 
-#ifdef __APPLE__
-#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#  include <GLUT/glut.h>
-#else
-#  include <GL/glut.h>
-#endif
+// Mouse rotation sensitivity
+float sensitivity = 0.2f;
 
-using namespace std;
+// width and height of the window
+int ww, hh;
 
-#define WIDTH	    600	/* window dimensions */
-#define HEIGHT		600
+// Mouse position and yaw  
+float x_pos = 0.0f, y_pos = 0.0f;
 
-static int icolor = 0;
+void mouseMove(int xx, int yy) {
 
-/*
-   Display Callback Routine: clear the screen and draw a square
-   This routine is called every time the window on the screen needs
-   to be redrawn, like if the window is iconized and then reopened
-   by the user, and when the window is first created. It is also
-   called whenever the program calls glutPostRedisplay()
-*/
-void drawSquare(){
-  // red, yellow, green, cyan, blue, magenta
-  float colors[6][3] = {{1, 0, 0}, {1, 1, 0}, {0, 1, 0},
-			{0, 1, 1}, {0, 0, 1}, {1, 0, 1}};
-  
-  glClear(GL_COLOR_BUFFER_BIT);  // clear window to background color
+	// Get mouse position scaling by the center of the scene
+	x_pos = (xx - ww / 2) * 0.01;
+	y_pos = (yy - hh / 2) * 0.01;
 
-  // set the drawing color to the currently selected color
-  glColor3f(colors[icolor][0], colors[icolor][1], colors[icolor][2]);
-  
-  // draw the square
-  glBegin(GL_POLYGON);
-    glVertex2i(100, 100);
-    glVertex2i(100, 500);
-    glVertex2i(500, 500);
-    glVertex2i(500, 100);
-  glEnd();
+	// Get the angle of the coordinate: we just use sin for both x/y and 
+	// - cos for the z coordinate (since we're looking into the scene)
+	xangle = sin(x_pos);
+	yangle = sin(y_pos);
+	zangle = -cos(x_pos);
+	std::cout << xx << " " << x_pos << " " << xangle << std::endl;
 
-  // flush the OpenGL pipeline to the viewport
-  glutSwapBuffers();
+	// Do not exceed the vertical view angle of the camera by 45 degree
+	if (yangle * TO_RADIANS > 45 || yangle * TO_RADIANS < -45) {
+		yangle = 45.0f;
+	}
+
 }
 
-/*
-  Keyboard Callback Routine: 'c' cycle through colors, 'q' or ESC quit
-  This routine is called every time a key is pressed on the keyboard
-*/
-void handleKey(unsigned char key, int x, int y){
-  
-  switch(key){
-    case 'c':		// 'c' - cycle to next color
-    case 'C':
-      icolor = (icolor + 1) % 6;
-      glutPostRedisplay();
-      break;
-      
-    case 'q':		// q - quit
-    case 'Q':
-    case 27:		// esc - quit
-      exit(0);
-      
-    default:		// not a valid key -- just ignore it
-      return;
-  }
+
+void pressKey(unsigned char key, int xx, int yy) {
+
+	// Speed of movement
+	float speed = 0.50f;
+
+	// Case switch
+	switch (key) {
+
+		// We're moving left/right/up/down with the keyboard. For example, to achieve a 360 degree rotation
+		// based on the camera angle given by the mouse, we add to the x variable the z angle and 
+		// the z the x one in the A (left) case. Same happens with D. 
+		// With W/S, since we just want too move forward and backward the camera, we add the correct 
+		// angle to the x and z variable.
+	case 'A':
+	case 'a':
+		x += zangle * speed;
+		z -= xangle * speed;
+		break;
+	case 'D':
+	case 'd':
+		x -= zangle * speed;
+		z += xangle * speed;
+		break;
+	case 'W':
+	case 'w':
+		x += xangle * speed;
+		z += zangle * speed;
+		break;
+	case 'S':
+	case 's':
+		x -= xangle * speed;
+		z -= zangle * speed;
+		break;
+	}
+
 }
 
-/*
-   Main program to draw the square, change colors, and wait for quit
-*/
-int main(int argc, char* argv[]){
 
-  // start up the glut utilities
-  glutInit(&argc, argv);
+void drawScene(void) {
 
-  // make GLUT select a double buffered display that uses RGBA colors
-  glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-  
-  // create the graphics window, giving width, height, and title text
-  glutInitWindowSize(WIDTH, HEIGHT);
-  glutCreateWindow("A Simple Square");
+	// Clearing procedures 
+	glClear(GL_COLOR_BUFFER_BIT);
+	glColor3f(0.0, 1.0, 0.0);
+	glLoadIdentity();
 
-  // set up the callback routines to be called when glutMainLoop() detects
-  // an event
-  glutDisplayFunc(drawSquare);	  // display callback
-  glutKeyboardFunc(handleKey);	  // keyboard callback
+	// Looking at the coordinate calculated by moving mouse/keyboard. 
+	// The first three parameters: the camera position vector. 
+	// The second three parameters: the point we're looking at 
+	// Thee last three parameters: the UP vector 
+	gluLookAt(x, y, z, x + xangle, y - yangle, z + zangle, 0.0f, y, 0.0f);
 
-  // define the drawing coordinate system on the viewport
-  // lower left is (0, 0), upper right is (WIDTH, HEIGHT), measured in pixels
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluOrtho2D(0, WIDTH, 0, HEIGHT);
+	// Draw a square in the air
+	glBegin(GL_QUADS);
+	glVertex3f(-2.0, 2.0, -40.0);
+	glVertex3f(2.0, 2.0, -40.0);
+	glVertex3f(2.0, 6.0, -40.0);
+	glVertex3f(-2.0, 6.0, -40.0);
+	glEnd();
 
-  // specify window clear (background) color to be opaque white
-  glClearColor(1, 1, 1, 1);
+	// Draw an XZ plane
+	glColor3f(0.9f, 0.9f, 0.9f);
+	glBegin(GL_QUADS);
+	glVertex3f(-100.0f, 0.0f, -100.0f);
+	glVertex3f(-100.0f, 0.0f, 100.0f);
+	glVertex3f(100.0f, 0.0f, 100.0f);
+	glVertex3f(100.0f, 0.0f, -100.0f);
+	glEnd();
 
-  // Routine that loops forever looking for events. It calls the registered 
-  // callback routine to handle each event that is detected
-  glutMainLoop();
-  return 0;
+	// Swap front and back buffer
+	glutSwapBuffers();
+
+}
+
+void resize(int w, int h) {
+
+	// Setting ratio and new window size
+	float ratio = w * 1.0 / h;
+	ww = w;
+	hh = h;
+
+	// Setting the viewport
+	glViewport(0, 0, w, h);
+
+	// Setting the projection 
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+
+	// Set the correct perspective.
+	gluPerspective(45.0f, ratio, 0.1f, 100.0f);
+
+	//glOrtho(-10.0, 10.0, -10.0, 10.0, 0.0, 10.0); 
+
+	// Resettign the modelview matrix 
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// Redisplay the scene
+	glutPostRedisplay();
+
+}
+
+void update(int value) {
+
+	// Timer function in which we redisplay the content of the screen each 1000/60 
+	// msec, meaning that we want to achieve a 60fps configuration.
+	glutPostRedisplay();
+	glutTimerFunc(1000 / 60, update, 0);
+}
+
+void setup(void) {
+
+	// Clearing background color and setting up to black
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+
+	// Other init procedures if needed
+
+}
+
+void main(int argc, char** argv) {
+
+	// Init procedures
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+	glutInitWindowPosition(50, 50);
+	glutInitWindowSize(500, 500);
+
+	// Creating a window 
+	glutCreateWindow("Camera.cpp");
+
+	// Func callback
+	glutReshapeFunc(resize);
+	glutDisplayFunc(drawScene);
+	glutKeyboardFunc(pressKey);
+	glutPassiveMotionFunc(mouseMove);
+
+	// here are the new entries
+	glutTimerFunc(100, update, 0);
+
+	// Setup func 
+	setup();
+
+	// start loop
+	glutMainLoop();
+
 }

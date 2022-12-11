@@ -74,7 +74,7 @@ void makeGrid() {
 void init() {
   // set up camera
   // parameters are eye point, aim point, up vector
-  camera = new Camera(Vector3d(0, 32, 27), Vector3d(0, 0, 0),
+  camera = new Camera(Vector3d(0, 0, 1), Vector3d(0, 0, 0),
                       Vector3d(0, 1, 0));
   
   // grey background for window
@@ -97,11 +97,11 @@ void PerspDisplay() {
   
   if (showGrid) 
     makeGrid();
-  
+  glutWireCube(1);
   //
   // here is where you would draw your scene!
   //
-  glTranslatef(0, 3.5, 0);
+ // glTranslatef(0, 3.5, 0);
   glutWireTeapot(5);
   
   glutSwapBuffers();
