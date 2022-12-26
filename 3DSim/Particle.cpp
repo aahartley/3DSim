@@ -7,6 +7,12 @@ Particle::Particle() {
 	this->acc = Vector3f(0.0f, 0.0f, 0.0f);
 	this->vel = Vector3f(0.0f, 0.0f, 0.0f);
 	this->pos = Vector3f(0.0f, 0.0f, 0.0f);
+	this->oldAcc = acc;
+	this->oldVel = vel;
+	this->oldPos = pos;
+	this->mu = 0.25f;
+	this->alive = true;
+	this->radius = 1.0f;
 
 }
 
@@ -19,6 +25,9 @@ void Particle::clearForces() {
 	sumForces = Vector3f(0.0f, 0.0f, 0.0f);
 }
 void Particle::integrate(float dt) {
+	oldAcc = acc;
+	oldVel = vel;
+	oldPos = pos;
 	acc = sumForces * invM;
 	vel += acc * dt;
 	pos += vel * dt;

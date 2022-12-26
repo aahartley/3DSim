@@ -20,10 +20,10 @@ public:
 
     Vector3f& normalize();                       // v1.normalize()
     Vector3f unitVector() const;                 // v1.unitVector()
-    //Vector3f normal() const;                     // n = v1.normal()
+    Vector3f normal() const;                     // n = v1.normal()
 
-    //float dot(const Vector3f& v) const;          // v1.Dot(v2)
-   // float cross(const Vector3f& v) const;        // v1.Cross(v2)
+    float dot(const Vector3f& v) const;          // v1.Dot(v2)
+    Vector3f cross(const Vector3f& v) const;        // v1.Cross(v2)
 
     Vector3f& operator = (const Vector3f& v);        // v1 = v2
     bool operator == (const Vector3f& v) const;  // v1 == v2

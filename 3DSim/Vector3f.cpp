@@ -48,19 +48,19 @@ Vector3f Vector3f::unitVector() const {
 	return result;
 }
 
-//fix
-//Vector3f Vector3f::normal() const {
-//	return Vector3f(y, -x).normalize();
-//}
 
-//fix
-//float Vector3f::dot(const Vector3f& v) const {
-//	return (x * v.x) + (y * v.y);
-//}
-//
-//float Vector3f::cross(const Vector3f& v) const {
-//	return (x * v.y) - (y * v.x);
-//}
+Vector3f Vector3f::normal() const {
+	return Vector3f(-y,x,0).normalize();
+}
+
+
+float Vector3f::dot(const Vector3f& v) const {
+	return (x * v.x) + (y * v.y) + (z*v.z);
+}
+
+Vector3f Vector3f::cross(const Vector3f& v) const {
+	return Vector3f((y*v.z-z*v.y),-(x*v.z-z*v.x),(x*v.y-y*v.x));
+}
 
 Vector3f& Vector3f::operator = (const Vector3f& v) {
 	x = v.x;

@@ -1,29 +1,247 @@
-#include "gl/glew.h"
-#include "GLFW/glfw3.h"
-#include "Constants.h"
-#include "Particle.h"
-#include <iostream>
-#include <thread>
-#include <chrono>
-void processInput(GLFWwindow * window);
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+#include "Main.h"
 
-float xPosInWindow(float x)
-{
-    return (WINDOW_SIZE / 2) + (x * 4);
+void test() {
+    Particle* p = new Particle();
+    p->mass = 1.0f;
+    p->pos = Vector3f(0.0f, 100.0f, 0.0f);
+    p->vel = Vector3f(10.0f, 0.0f, 30.0f);
+    std::cout << p->pos.x << ' ' << p->pos.y << ' ' << p->pos.z << '\n';
+    for (int i = 0; i < 5; i++) {
+        p->addForce(Vector3f(0.0f, -10.0f * p->mass, 0.0f));
+        p->integrate(1);
+        p->addForce(p->vel * -0.4f); //air resitance -dV
+        p->addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
+        //why integrate first without forces, ex from textbook?
+
+        std::cout << p->pos.x << ' ' << p->pos.y << ' ' << p->pos.z << '\n';
+    }
+
 }
 
-float yPosInWindow(float y)
-{
-    // std::cout << "yposinwindow "<<(WINDOW_SIZE / 2) - (y * 1) << '\n';
-    return (WINDOW_SIZE * .2) + (y * 4);
-}
-float NDC(float n) {
-    // std::cout << "ndc " << n / WINDOW_SIZE * 2 - 1 << '\n';
-    return n / WINDOW_SIZE * 2 - 1;
-}
 int main() {
-    GLFWwindow* window;
+    //test();
+    if(init()<0)return -1;
+    
+    p->mass = 1.0f;
+    p->pos = Vector3f(-35.0f, 20.0f, 65.0f);
+    p->vel = Vector3f(0.0f, 0.0f, 0.0f);
+
+    std::vector<Vector3f> infinPlaneVert;
+    infinPlaneVert.push_back(Vector3f(50, 0, 50));
+    InfinitePlane infinitePlane(infinPlaneVert);
+
+    std::vector<Vector3f> finPlaneVert;
+    //3 2
+    //0 1   bottom big plane
+    finPlaneVert.push_back(Vector3f(-100.0f, 0.0f, 100.0f)); //p0
+    finPlaneVert.push_back(Vector3f(100.0f, 0.0f, 100.0f)); //p1
+    finPlaneVert.push_back(Vector3f(100.0f, 0.0f, -100.0f)); //p2
+    finPlaneVert.push_back(Vector3f(-100.0f, 0.0f, -100.0f)); //p3
+
+    Plane* finitePlane= new Plane(finPlaneVert,Vector3f(0,0,0));
+
+    //1 2
+    //0 3 right-side cube
+    std::vector<Vector3f> finPlaneVert2;
+    finPlaneVert2.push_back(Vector3f(-30.0f, 0.0f, 60.0f)); //p0
+    finPlaneVert2.push_back(Vector3f(-30.0f, 10.0f, 60.0f)); //p1
+    finPlaneVert2.push_back(Vector3f(-30.0f, 10.0f, 70.0f)); //p2
+    finPlaneVert2.push_back(Vector3f(-30.0f, 0.0f, 70.0f)); //p3
+
+    Plane* finitePlane2 = new Plane(finPlaneVert2, Vector3f(-30,5,65));
+
+    //1 2
+    //0 3 left-side
+    std::vector<Vector3f> finPlaneVert3;
+    finPlaneVert3.push_back(Vector3f(-40.0f, 0.0f, 60.0f)); //p0
+    finPlaneVert3.push_back(Vector3f(-40.0f, 10.0f, 60.0f)); //p1
+    finPlaneVert3.push_back(Vector3f(-40.0f, 10.0f, 70.0f)); //p2
+    finPlaneVert3.push_back(Vector3f(-40.0f, 0.0f, 70.0f)); //p3
+
+    Plane* finitePlane3 = new Plane(finPlaneVert3, Vector3f(-30, 5, 65));
+
+    //3 2
+    //0 1 back
+    std::vector<Vector3f> finPlaneVert4;
+    finPlaneVert4.push_back(Vector3f(-40.0f, 0.0f, 60.0f)); //p0
+    finPlaneVert4.push_back(Vector3f(-30.0f, 0.0f, 60.0f)); //p1
+    finPlaneVert4.push_back(Vector3f(-30.0f, 10.0f, 60.0f)); //p2
+    finPlaneVert4.push_back(Vector3f(-40.0f, 10.0f, 60.0f)); //p3
+
+    Plane* finitePlane4 = new Plane(finPlaneVert4, Vector3f(-30, 5, 65));
+
+    //3 2
+    //0 1 front
+    std::vector<Vector3f> finPlaneVert5;
+    finPlaneVert5.push_back(Vector3f(-40.0f, 0.0f, 70.0f)); //p0
+    finPlaneVert5.push_back(Vector3f(-30.0f, 0.0f, 70.0f)); //p1
+    finPlaneVert5.push_back(Vector3f(-30.0f, 10.0f, 70.0f)); //p2
+    finPlaneVert5.push_back(Vector3f(-40.0f, 10.0f, 70.0f)); //p3
+    
+    Plane* finitePlane5 = new Plane(finPlaneVert5, Vector3f(-30, 5, 65));
+
+    std::vector<Vector3f> finPlaneVert6;
+    //3 2
+    //0 1   top
+    finPlaneVert6.push_back(Vector3f(-40.0f, 10.0f, 70.0f)); //p0
+    finPlaneVert6.push_back(Vector3f(-30.0f, 10.0f, 70.0f)); //p1
+    finPlaneVert6.push_back(Vector3f(-30.0f, 10.0f, 60.0f)); //p2
+    finPlaneVert6.push_back(Vector3f(-40.0f, 10.0f, 60.0f)); //p3
+
+    Plane* finitePlane6 = new Plane(finPlaneVert6, Vector3f(0, 0, 0));
+
+    //objects.push_back(infinitePlane);
+    objects.push_back(finitePlane);
+    objects.push_back(finitePlane2);
+    objects.push_back(finitePlane3);
+    objects.push_back(finitePlane4);
+    objects.push_back(finitePlane5);
+    objects.push_back(finitePlane6);
+
+
+    float lastUpdateTime = 0.0f;  // number of seconds since the last loop
+    float lastFrameTime = 0.0f;   // number of seconds since the last frame
+    float deltaTime = 0.016f; // timestep
+    float t = 0; //current time
+    int n = 0; //iterations
+    while (!glfwWindowShouldClose(window) && t <= 100)
+    {
+        //camera perspective  and zoom
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        gluPerspective(zoom, 1, 0.1, 1000);
+        glMatrixMode(GL_MODELVIEW);
+
+        // std::cout << "time: " << t<<'\n';
+        static int timePreviousFrame;
+        int timeToWait = 16 - ((int)glfwGetTime() - timePreviousFrame);
+        if (timeToWait > 0)
+            std::this_thread::sleep_for(std::chrono::milliseconds(timeToWait));
+        timePreviousFrame = (int)glfwGetTime();
+        glfwPollEvents();
+
+        //input
+        processInput(window);
+
+        //render
+        render();
+       
+        //integrate
+      
+        if (p->alive) {
+            p->addForce(Vector3f(0.0f, -10.0f * p->mass, 0.0f));
+            p->integrate(deltaTime);
+            p->addForce(p->vel * -0.4f); //air resitance -dV
+            p->addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
+
+            for (Polygon* poly : objects) {
+                ParticleCollision pc(p);
+                if (pc.ParticleDetection(poly)) {
+                    pc.ParticleResponse(poly);
+                }
+            }
+
+        }
+          
+        
+       // std::cout << p->pos << '\n';
+        
+        // Swap front and back buffers 
+        glfwSwapBuffers(window);
+        n++;
+        t = n * deltaTime;
+
+
+    }
+    glfwTerminate();
+
+    return 0;
+}
+
+void render() {
+    //render
+       //std::cout << p->pos << '\n';
+    glEnable(GL_POINT_SMOOTH);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();                 // Reset the model-view matrix
+    //float z = std::cosf(t)*100;
+    if (rotateValue >= 360) {
+        rotateValue = 0;
+    }
+    if (rotatey >= 360) {
+        rotatey = 0;
+    }
+    float x = 250 * std::cosf(3.14f * rotateValue / 180);
+    float z = 250 * std::sinf(3.14f * rotateValue / 180);
+    float y = 250 * std::sinf(3.14f * rotatey / 180);
+
+    // std::cout << xCircle << '\n';
+    gluLookAt(x, y, z, 0.0, 30.0, 0.0, 0.0, 1.0, 0.0);
+    glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
+    glBegin(GL_POINTS);
+    glVertex3f(0.0f, 0.0f, 0.0f);
+    glEnd();
+    /*   glBegin(GL_LINES);
+       glVertex3f(0.0f, 0.0f, -10.0f);
+       glVertex3f(0.0f, 0.0f, 10.0f);
+       glEnd();*/
+
+    glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
+    glBegin(GL_POINTS);
+    // std::cout << p->pos.x << ' '<< p->pos.y <<' '<< p->pos.z << '\n';
+    glVertex3f(p->pos.x, p->pos.y, p->pos.z);
+    glEnd();
+    /*      glBegin(GL_LINES);
+          glVertex3f(-100.0f, 0.0f, 0.0f);
+          glVertex3f(100.0f, 0.0f, 0.0f);
+          glEnd();*/
+    glColor3f(1.0f, 1.0f, 1.0f);
+
+    //'infinite' white plane
+    glBegin(GL_QUADS);
+    glVertex3f(-100.0f, 0.0f, -100.0f);
+    glVertex3f(-100.0f, 0.0f, 100.0f);
+    glVertex3f(100.0f, 0.0f, 100.0f);
+    glVertex3f(100.0f, 0.0f, -100.0f);
+    glEnd();
+
+    glColor3f(0.0f, 1.0f, 0.0f);          // Set The Color To Red
+    glBegin(GL_QUADS);
+    //bottom
+    glVertex3f(-40.0f, 0.0f, 60.0f);
+    glVertex3f(-40.0f, 0.0f, 70.0f);
+    glVertex3f(-30.0f, 0.0f, 70.0f);
+    glVertex3f(-30.0f, 0.0f, 60.0f);
+    //top
+    glVertex3f(-40.0f, 10.0f, 60.0f);
+    glVertex3f(-40.0f, 10.0f, 70.0f);
+    glVertex3f(-30.0f, 10.0f, 70.0f);
+    glVertex3f(-30.0f, 10.0f, 60.0f);
+    //back
+    glVertex3f(-30.0f, 10.0f, 60.0f);
+    glVertex3f(-40.0f, 10.0f, 60.0f);
+    glVertex3f(-40.0f, 0.0f, 60.0f);
+    glVertex3f(-30.0f, 0.0f, 60.0f);
+    //front
+    glVertex3f(-30.0f, 10.0f, 70.0f);
+    glVertex3f(-40.0f, 10.0f, 70.0f);
+    glVertex3f(-40.0f, 0.0f, 70.0f);
+    glVertex3f(-30.0f, 0.0f, 70.0f);
+    //left-side
+    glVertex3f(-40.0f, 10.0f, 70.0f);
+    glVertex3f(-40.0f, 10.0f, 60.0f);
+    glVertex3f(-40.0f, 0.0f, 60.0f);
+    glVertex3f(-40.0f, 0.0f, 70.0f);
+    //right-side
+    glVertex3f(-30.0f, 10.0f, 70.0f);
+    glVertex3f(-30.0f, 10.0f, 60.0f);
+    glVertex3f(-30.0f, 0.0f, 60.0f);
+    glVertex3f(-30.0f, 0.0f, 70.0f);
+    glEnd();
+
+}
+int init() {
 
     /* Initialize the library */
     if (!glfwInit())
@@ -51,93 +269,37 @@ int main() {
     glLoadIdentity();
     ///glViewport(0, 0, WINDOW_SIZE, WINDOW_SIZE);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
+    glViewport(0, 0, 800, 800);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(zoom, 1, 0.1, 1000);
+    glMatrixMode(GL_MODELVIEW);
 
     //glClearDepth(1.0f);
     glEnable(GL_DEPTH_TEST);
-   // glDepthFunc(GL_LEQUAL);
-    //glShadeModel(GL_SMOOTH);   // Enable smooth shading
-    //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
-
-    Particle* p = new Particle();
-    p->mass = 5.0f;
-    p->pos = Vector3f(0.0f, 100.0f, 0.0f);
-    p->vel = Vector3f(10.0f, 0.0f, 10.0f);
-
-    float lastUpdateTime = 0.0f;  // number of seconds since the last loop
-    float lastFrameTime = 0.0f;   // number of seconds since the last frame
-    float deltaTime = 0.046f;
-    float t = 0;
-    int n = 0;
-    while (!glfwWindowShouldClose(window) && t <= 5)
-    {
-        // std::cout << "time: " << t<<'\n';
-        static int timePreviousFrame;
-        int timeToWait = 46 - ((int)glfwGetTime() - timePreviousFrame);
-        if (timeToWait > 0)
-            std::this_thread::sleep_for(std::chrono::milliseconds(timeToWait));
-        timePreviousFrame = (int)glfwGetTime();
-        glfwPollEvents();
-        //input
-        processInput(window);
-
-
-
-        //render
-        //std::cout << p->pos << '\n';
-        glEnable(GL_POINT_SMOOTH);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glLoadIdentity();                 // Reset the model-view matrix
-
-        gluLookAt(-100.0, 20.0, 0.0, 0.0, 20.0, 0.0, 0.0, 0.0, 1.0);
-
-        glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
-        glBegin(GL_POINTS);
-        glVertex3f(0.0f, 0.0f, 0.0f);
-        glEnd();
-
-        glColor3f(1.0f, 1.0f, 1.0f);          // Set The Color To white
-        glBegin(GL_POINTS);
-        std::cout << p->pos.x << ' '<< p->pos.y <<' '<< p->pos.z << '\n';
-        glVertex3f(p->pos.x, p->pos.y, p->pos.z);
-        glEnd();
-
-        //glColor3f(1.0f, 1.0f, 1.0f);          // Set The Color To white
-        //glBegin(GL_TRIANGLES);                      // Drawing Using Triangles
-        //glVertex3f(0.0f, 1.0f, -4.0f);              // Top
-        //glVertex3f(-1.0f, -1.0f, -4.0f);              // Bottom Left
-        //glVertex3f(1.0f, -1.0f, -4.0f);              // Bottom Right
-        //glEnd();
-
-        p->addForce(Vector3f(0.0f, -10.0f * p->mass, 0.0f));
-        p->addForce(p->vel * -0.4f); //air resitance -dV
-        p->integrate(deltaTime);
-        if (p->pos.y <= 0.0f) {
-            p->pos.y = 0.0f;
-            p->vel.y *= -0.9f;
-            // p->pos.z += 0.1;
-        }
-
-        // Swap front and back buffers 
-        glfwSwapBuffers(window);
-        n++;
-        t = n * deltaTime;
-
-
-
-
-    }
-    glfwTerminate();
+    // glDepthFunc(GL_LEQUAL);
+     //glShadeModel(GL_SMOOTH);   // Enable smooth shading
+     //glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);  // Nice perspective corrections
 
     return 0;
 }
-
 
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        rotateValue+=3;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        rotateValue-=3;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        rotatey += 3;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        rotatey -= 3;
+    
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
@@ -145,6 +307,51 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(45.0f,1,0.1,1000);
+    gluPerspective(zoom,1,0.1,1000);
     glMatrixMode(GL_MODELVIEW);
 }
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+  //  std::cout << xpos << ' ' << ypos << '\n';
+  //  mx = xpos;
+   // my = ypos;
+}
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    //std::cout << xoffset << ' ' << yoffset << '\n';
+    zoom += (float) - yoffset * 10;
+}
+//cube
+/*
+ glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
+        glBegin(GL_QUADS);
+        //bottom
+        glVertex3f(-10.0f, 0.0f, -10.0f);
+        glVertex3f(-10.0f, 0.0f, 10.0f);
+        glVertex3f(10.0f, 0.0f, 10.0f);
+        glVertex3f(10.0f, 0.0f, -10.0f);
+        //top
+        glVertex3f(-10.0f, 10.0f, -10.0f);
+        glVertex3f(-10.0f, 10.0f, 10.0f);
+        glVertex3f(10.0f, 10.0f, 10.0f);
+        glVertex3f(10.0f, 10.0f, -10.0f);
+        //back
+        glVertex3f(10.0f, 10.0f, -10.0f);
+        glVertex3f(-10.0f, 10.0f, -10.0f);
+        glVertex3f(-10.0f, 0.0f, -10.0f);
+        glVertex3f(10.0f, 0.0f, -10.0f);
+        //front
+        glVertex3f(10.0f, 10.0f, 10.0f);
+        glVertex3f(-10.0f, 10.0f, 10.0f);
+        glVertex3f(-10.0f, 0.0f, 10.0f);
+        glVertex3f(10.0f, 0.0f, 10.0f);
+        //left-side
+        glVertex3f(-10.0f, 10.0f, 10.0f);
+        glVertex3f(-10.0f, 10.0f, -10.0f);
+        glVertex3f(-10.0f, 0.0f, -10.0f);
+        glVertex3f(-10.0f, 0.0f, 10.0f);
+        //right-side
+        glVertex3f(10.0f, 10.0f, 10.0f);
+        glVertex3f(10.0f, 10.0f, -10.0f);
+        glVertex3f(10.0f, 0.0f, -10.0f);
+        glVertex3f(10.0f, 0.0f, 10.0f);
+        glEnd();*/
