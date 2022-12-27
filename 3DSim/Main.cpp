@@ -15,6 +15,7 @@ void test() {
 
         std::cout << p->pos.x << ' ' << p->pos.y << ' ' << p->pos.z << '\n';
     }
+    delete p;
 
 }
 
@@ -22,9 +23,11 @@ int main() {
     //test();
     if(init()<0)return -1;
     
-    p->mass = 1.0f;
-    p->pos = Vector3f(-35.0f, 20.0f, 65.0f);
-    p->vel = Vector3f(0.0f, 0.0f, 0.0f);
+    p.mass = 1.0f;
+    p.pos = Vector3f(0.0f, 100.0f, 0.0f);
+    p.vel = Vector3f(10.0f, 0.0f, 30.0f);
+
+    pL.add(p);
 
     std::vector<Vector3f> infinPlaneVert;
     infinPlaneVert.push_back(Vector3f(50, 0, 50));
@@ -98,7 +101,6 @@ int main() {
     objects.push_back(finitePlane5);
     objects.push_back(finitePlane6);
 
-
     float lastUpdateTime = 0.0f;  // number of seconds since the last loop
     float lastFrameTime = 0.0f;   // number of seconds since the last frame
     float deltaTime = 0.016f; // timestep
@@ -106,6 +108,7 @@ int main() {
     int n = 0; //iterations
     while (!glfwWindowShouldClose(window) && t <= 100)
     {
+
         //camera perspective  and zoom
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -123,27 +126,38 @@ int main() {
         //input
         processInput(window);
 
+        pG.generateParticles(pL, t, deltaTime);
+        pL.testAndDeactivate();
+
         //render
         render();
-       
+        auto t1 = std::chrono::high_resolution_clock::now();
+
         //integrate
-      
-        if (p->alive) {
-            p->addForce(Vector3f(0.0f, -10.0f * p->mass, 0.0f));
-            p->integrate(deltaTime);
-            p->addForce(p->vel * -0.4f); //air resitance -dV
-            p->addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
-
-            for (Polygon* poly : objects) {
-                ParticleCollision pc(p);
-                if (pc.ParticleDetection(poly)) {
-                    pc.ParticleResponse(poly);
+        //#pragma omp parallel for num_threads(16)
+        for (int i = 0; i < pL.particles.size(); i++) {
+            if (pL.particles[i].active) {
+                pL.particles[i].addForce(Vector3f(0.0f, -10.0f * pL.particles[i].mass, 0.0f));
+                pL.particles[i].integrate(deltaTime);
+                pL.particles[i].addForce(pL.particles[i].vel * -0.4f); //air resitance -dV
+                pL.particles[i].addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
+                ParticleCollision pc(pL.particles[i]);
+                for (int j = 0; j < objects.size(); j++) {
+                    if (pc.ParticleDetection(*objects[j])) {
+                        pc.ParticleResponse(*objects[j]);
+                    }
                 }
-            }
 
+            }
         }
-          
-        
+      
+     
+        auto t2 = std::chrono::high_resolution_clock::now();
+
+        /* Getting number of milliseconds as a double. */
+        std::chrono::duration<double, std::milli> ms_double = t2 - t1;
+
+       // std::cout << ms_double.count() << "ms\n";
        // std::cout << p->pos << '\n';
         
         // Swap front and back buffers 
@@ -160,12 +174,10 @@ int main() {
 
 void render() {
     //render
-       //std::cout << p->pos << '\n';
     glEnable(GL_POINT_SMOOTH);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();                 // Reset the model-view matrix
-    //float z = std::cosf(t)*100;
     if (rotateValue >= 360) {
         rotateValue = 0;
     }
@@ -176,7 +188,6 @@ void render() {
     float z = 250 * std::sinf(3.14f * rotateValue / 180);
     float y = 250 * std::sinf(3.14f * rotatey / 180);
 
-    // std::cout << xCircle << '\n';
     gluLookAt(x, y, z, 0.0, 30.0, 0.0, 0.0, 1.0, 0.0);
     glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
     glBegin(GL_POINTS);
@@ -190,7 +201,10 @@ void render() {
     glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
     glBegin(GL_POINTS);
     // std::cout << p->pos.x << ' '<< p->pos.y <<' '<< p->pos.z << '\n';
-    glVertex3f(p->pos.x, p->pos.y, p->pos.z);
+    for (Particle p : pL.particles) {
+        if(p.active)
+            glVertex3f(p.pos.x, p.pos.y, p.pos.z);
+    }
     glEnd();
     /*      glBegin(GL_LINES);
           glVertex3f(-100.0f, 0.0f, 0.0f);

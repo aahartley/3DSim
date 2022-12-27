@@ -9,11 +9,11 @@ struct ParticleCollision {
     float dn1 = 0;
     Vector3f normal;
 
-    ParticleCollision() = default;
-    ParticleCollision(Particle* p) :p(p) {};
-    bool ParticleDetection(Polygon* poly);
+    ParticleCollision() { p = nullptr; };
+    ParticleCollision(Particle& p) :p(&p) {};
+    bool ParticleDetection(Polygon& poly);
     void ParticleDetermination(float deltaTime);
-    void ParticleResponse(Polygon* poly);
+    void ParticleResponse(Polygon& poly);
 };
 
 

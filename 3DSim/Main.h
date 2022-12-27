@@ -3,6 +3,8 @@
 #include "GLFW/glfw3.h"
 #include "Constants.h"
 #include "Particle.h"
+#include "ParticleList.h"
+#include "ParticleGenerator.h"
 #include "Polygon.h"
 #include "ParticleCollision.h"
 
@@ -19,8 +21,10 @@ float zoom = 45.0f;
 float rotatey = 20.0f;
 float moveF = 0;
 GLFWwindow* window;
-Particle* p = new Particle();
+Particle p =  Particle();
 std::vector<Polygon*> objects;
+ParticleList pL(100);
+ParticleGenerator pG(10,0,50);
 
 int init();
 void render();

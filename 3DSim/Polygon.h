@@ -29,6 +29,7 @@ struct Plane: public Polygon {
 	PolygonType getType() const override {
 		return PLANE;
 	}
+	~Plane() {};
 
 };
 struct InfinitePlane : public Polygon {
@@ -42,8 +43,9 @@ struct InfinitePlane : public Polygon {
 	InfinitePlane(std::vector<Vector3f> vertices) : vertices(vertices) {
 		surfaceNormal = Vector3f(-vertices[0].y, vertices[0].x, 0).normalize();
 	}
-	PolygonType getType() const  {
+	PolygonType getType() const override {
 		return INFINITEPLANE;
 	}
+	~InfinitePlane() {};
 
 };

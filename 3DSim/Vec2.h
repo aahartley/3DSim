@@ -1,6 +1,3 @@
-/*
-The source code is from Gustavo Pezzi, co-founder of Pikuma.com 
-*/
 
 #ifndef VEC2_H
 #define VEC2_H
@@ -12,7 +9,7 @@ struct Vec2 {
     Vec2();
     Vec2(float x, float y);
     
-    ~Vec2() = default;
+    ~Vec2() {};
 
     void add(const Vec2& v);                 // v1.add(v2)
     void sub(const Vec2& v);                 // v1.sub(v2)

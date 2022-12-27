@@ -13,10 +13,10 @@ public:
 
 	float mass;
 	float invM;
-	float mu;
 	float radius;
+	float age;
 
-	bool alive;
+	bool active;
 
 	Vector3f sumForces;
 
@@ -27,4 +27,5 @@ public:
 	void addForce(Vector3f force);
 	void clearForces();
 
+	void testAndDeactivate();
 };

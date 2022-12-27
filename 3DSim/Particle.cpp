@@ -10,9 +10,9 @@ Particle::Particle() {
 	this->oldAcc = acc;
 	this->oldVel = vel;
 	this->oldPos = pos;
-	this->mu = 0.25f;
-	this->alive = true;
+	this->active = true;
 	this->radius = 1.0f;
+	this->age = 0.0f;
 
 }
 
@@ -25,6 +25,7 @@ void Particle::clearForces() {
 	sumForces = Vector3f(0.0f, 0.0f, 0.0f);
 }
 void Particle::integrate(float dt) {
+	age += dt;
 	oldAcc = acc;
 	oldVel = vel;
 	oldPos = pos;
@@ -33,4 +34,8 @@ void Particle::integrate(float dt) {
 	pos += vel * dt;
 	clearForces();
 
+}
+
+void Particle::testAndDeactivate() {
+	if (age > 10)active = false;
 }

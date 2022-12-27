@@ -1,6 +1,3 @@
-/*
-The source code is from Gustavo Pezzi, co - founder of Pikuma.com
-*/
 
 #include "Vec2.h"
 #include <math.h>
@@ -30,8 +27,8 @@ void Vec2::scale(const float n) {
 
 Vec2 Vec2::rotate(const float angle) const {
 	Vec2 result;
-	result.x = x * cos(angle) - y * sin(angle);
-	result.y = x * sin(angle) + y * cos(angle);
+	result.x = x * cosf(angle) - y * sinf(angle);
+	result.y = x * sinf(angle) + y * cosf(angle);
 	return result;
 }
 

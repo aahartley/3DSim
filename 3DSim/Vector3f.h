@@ -7,7 +7,7 @@ public:
 
 	Vector3f();
 	Vector3f(float x, float y, float z);
-	virtual ~Vector3f();
+	~Vector3f();
 
 	std::ostream& operator<<(std::ostream& out) {
 		return out << x << ' ' << y << ' ' << z;
