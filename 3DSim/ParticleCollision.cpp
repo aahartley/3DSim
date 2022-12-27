@@ -10,7 +10,7 @@ bool ParticleCollision::ParticleDetection(Polygon& poly) {
         dn1 = (p->pos - plane.vertices[0]).dot(normal);
         dn1 > 0 ? dn1 -= 0.3f : dn1 += 0.3f;
         Vec2 xHit;
-
+        
         ////check to see if sign changed (above or below plane)
         if (((dn1 < 0) != (dn < 0))) {
             float sign = 0;
@@ -45,7 +45,7 @@ bool ParticleCollision::ParticleDetection(Polygon& poly) {
                     plane.twoDVertices.push_back(coord);
                 }
 
-
+                
             }
             bool pos = false;
             for (int i = 0; i < plane.vertices.size(); i++) {

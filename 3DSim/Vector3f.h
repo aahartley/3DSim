@@ -9,10 +9,6 @@ public:
 	Vector3f(float x, float y, float z);
 	~Vector3f();
 
-	std::ostream& operator<<(std::ostream& out) {
-		return out << x << ' ' << y << ' ' << z;
-	}
-
     //Vector3f rotate(const float angle) const;    // v1.rotate(angle)
 
     float magnitude() const;                 // v1.magnitude()

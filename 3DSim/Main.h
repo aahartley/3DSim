@@ -2,9 +2,9 @@
 #include "gl/glew.h"
 #include "GLFW/glfw3.h"
 #include "Constants.h"
+#include "ParticleGenerator.h"
 #include "Particle.h"
 #include "ParticleList.h"
-#include "ParticleGenerator.h"
 #include "Polygon.h"
 #include "ParticleCollision.h"
 
@@ -24,7 +24,7 @@ GLFWwindow* window;
 Particle p =  Particle();
 std::vector<Polygon*> objects;
 ParticleList pL(100);
-ParticleGenerator pG(10,0,50);
+ParticleGenerator pG(Vector3f(0,100,0),10,0,50);
 
 int init();
 void render();
