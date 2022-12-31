@@ -91,6 +91,9 @@ int main() {
     finPlaneVert6.push_back(Vector3f(-30.0f, 10.0f, 60.0f)); //p2
     finPlaneVert6.push_back(Vector3f(-40.0f, 10.0f, 60.0f)); //p3
 
+
+
+
     Plane* finitePlane6 = new Plane(finPlaneVert6, Vector3f(0, 0, 0));
 
     //objects.push_back(infinitePlane);
@@ -100,6 +103,9 @@ int main() {
     objects.push_back(finitePlane4);
     objects.push_back(finitePlane5);
     objects.push_back(finitePlane6);
+
+    spg.initializeGrid(objects);
+
 
     float lastUpdateTime = 0.0f;  // number of seconds since the last loop
     float lastFrameTime = 0.0f;   // number of seconds since the last frame
@@ -134,19 +140,20 @@ int main() {
         auto t1 = std::chrono::high_resolution_clock::now();
 
         //integrate
-        //#pragma omp parallel for num_threads(16)
+        //#pragma omp parallel for num_threads(12)
         for (int i = 0; i < pL.particles.size(); i++) {
             if (pL.particles[i].active) {
                 pL.particles[i].addForce(Vector3f(0.0f, -10.0f * pL.particles[i].mass, 0.0f));
                 pL.particles[i].integrate(deltaTime);
                 pL.particles[i].addForce(pL.particles[i].vel * -0.4f); //air resitance -dV
                 pL.particles[i].addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
-                ParticleCollision pc(pL.particles[i]);
+                spg.checkCollision(pL.particles[i]);
+             /*   ParticleCollision pc(pL.particles[i]);
                 for (int j = 0; j < objects.size(); j++) {
                     if (pc.ParticleDetection(*objects[j])) {
                         pc.ParticleResponse(*objects[j]);
                     }
-                }
+                }*/
 
             }
         }
@@ -155,9 +162,9 @@ int main() {
         auto t2 = std::chrono::high_resolution_clock::now();
 
         /* Getting number of milliseconds as a double. */
-        std::chrono::duration<double, std::milli> ms_double = t2 - t1;
+        //std::chrono::duration<double, std::milli> ms_double = t2 - t1;
 
-       // std::cout << ms_double.count() << "ms\n";
+        std::cout << ms_double.count() << "ms\n";
        // std::cout << p.pos << '\n';
         
         // Swap front and back buffers 

@@ -7,6 +7,7 @@
 #include "ParticleList.h"
 #include "Polygon.h"
 #include "ParticleCollision.h"
+#include "SpatialHashGrid.h"
 
 #include <iostream>
 #include <thread>
@@ -23,8 +24,9 @@ float moveF = 0;
 GLFWwindow* window;
 Particle p =  Particle();
 std::vector<Polygon*> objects;
-ParticleList pL(100);
+ParticleList pL(1000);
 ParticleGenerator pG(Vector3f(0,100,0),10,0,50);
+SpatialHashGrid spg(Vector3f(200, 20, 200), 10, Vector3f (-100, 0, -100));
 
 int init();
 void render();
