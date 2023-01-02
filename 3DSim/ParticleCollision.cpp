@@ -71,6 +71,25 @@ bool ParticleCollision::ParticleDetection(Polygon& poly) {
         else return false;
        
     }
+    else if (poly.getType() == TRIANGLE) {
+        Triangle triangle = (Triangle&)poly;
+        normal = triangle.surfaceNormalU;
+        dn = (p->oldPos - triangle.vertices[0]).dot(normal);
+        dn > 0 ? dn -= 0.3f : dn += 0.3f;
+
+        dn1 = (p->pos - triangle.vertices[0]).dot(normal);
+        dn1 > 0 ? dn1 -= 0.3f : dn1 += 0.3f;
+
+        ////check to see if sign changed (above or below plane)
+        if (((dn1 < 0) != (dn < 0))) {
+            Vector3f hit = (p->pos) - (normal * dn1);
+            float u = ((triangle.vertices[2] - triangle.vertices[1]).cross((hit - triangle.vertices[1]))).dot(normal) / triangle.surfaceNormal.magnitude();
+            float v = ((triangle.vertices[0] - triangle.vertices[2]).cross((hit - triangle.vertices[2]))).dot(normal) / triangle.surfaceNormal.magnitude();
+            float w = 1 - u - v;
+            if (u >= 0 && v >= 0 && u + v <= 1)return true;
+        }
+        else return false;
+    }
     else return false;
 
 }
@@ -84,5 +103,12 @@ void ParticleCollision::ParticleResponse(Polygon& poly) {
         Vector3f vN = normal * (p->vel.dot(normal));
         Vector3f vT = p->vel - vN;
         p->vel = (vN * -plane.cr) + (vT * (1 - plane.cf));
+    }
+    else if (poly.getType() == TRIANGLE) {
+        Triangle triangle = (Triangle&)poly;
+        p->pos = p->pos - normal * (1 + triangle.cr) * dn1;
+        Vector3f vN = normal * (p->vel.dot(normal));
+        Vector3f vT = p->vel - vN;
+        p->vel = (vN * -triangle.cr) + (vT * (1 - triangle.cf));
     }
 }

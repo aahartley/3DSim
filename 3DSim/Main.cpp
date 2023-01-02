@@ -22,16 +22,18 @@ void test() {
 int main() {
     //test();
     if(init()<0)return -1;
-    
+    random.populateRand(1000);
+    ParticleGenerator pG(Vector3f(0, 100, 0), 100, 0, 50,random);
+
     p.mass = 1.0f;
     p.pos = Vector3f(0.0f, 100.0f, 0.0f);
-    p.vel = Vector3f(10.0f, 0.0f, 30.0f);
+    p.vel = Vector3f(0.0f, 0.0f, 0.0f);
 
     pL.add(p);
 
-    std::vector<Vector3f> infinPlaneVert;
-    infinPlaneVert.push_back(Vector3f(50, 0, 50));
-    InfinitePlane infinitePlane(infinPlaneVert);
+    //std::vector<Vector3f> infinPlaneVert;
+    //infinPlaneVert.push_back(Vector3f(50, 0, 50));
+    //InfinitePlane infinitePlane(infinPlaneVert);
 
     std::vector<Vector3f> finPlaneVert;
     //3 2
@@ -91,18 +93,22 @@ int main() {
     finPlaneVert6.push_back(Vector3f(-30.0f, 10.0f, 60.0f)); //p2
     finPlaneVert6.push_back(Vector3f(-40.0f, 10.0f, 60.0f)); //p3
 
-
-
-
     Plane* finitePlane6 = new Plane(finPlaneVert6, Vector3f(0, 0, 0));
+
+    std::vector<Vector3f> triVert;
+    triVert.push_back(Vector3f(-30.0f, 0.0f, 60.0f)); //p0
+    triVert.push_back(Vector3f(-30.0f, 10.0f, 65.0f)); //p1
+    triVert.push_back(Vector3f(-30.0f, 0.0f, 70.0f)); //p3
+    Triangle* triangle = new Triangle(triVert, Vector3f(0, 0, 0));
 
     //objects.push_back(infinitePlane);
     objects.push_back(finitePlane);
-    objects.push_back(finitePlane2);
+    //objects.push_back(finitePlane2);
     objects.push_back(finitePlane3);
     objects.push_back(finitePlane4);
     objects.push_back(finitePlane5);
     objects.push_back(finitePlane6);
+    objects.push_back(triangle);
 
     spg.initializeGrid(objects);
 
@@ -134,7 +140,6 @@ int main() {
 
         pG.generateParticles(pL, t, deltaTime);
         pL.testAndDeactivate();
-
         //render
         render();
         auto t1 = std::chrono::high_resolution_clock::now();
@@ -146,7 +151,7 @@ int main() {
                 pL.particles[i].addForce(Vector3f(0.0f, -10.0f * pL.particles[i].mass, 0.0f));
                 pL.particles[i].integrate(deltaTime);
                 pL.particles[i].addForce(pL.particles[i].vel * -0.4f); //air resitance -dV
-                pL.particles[i].addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
+                //pL.particles[i].addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
                 spg.checkCollision(pL.particles[i]);
              /*   ParticleCollision pc(pL.particles[i]);
                 for (int j = 0; j < objects.size(); j++) {
@@ -162,7 +167,7 @@ int main() {
         auto t2 = std::chrono::high_resolution_clock::now();
 
         /* Getting number of milliseconds as a double. */
-        //std::chrono::duration<double, std::milli> ms_double = t2 - t1;
+        std::chrono::duration<double, std::milli> ms_double = t2 - t1;
 
         std::cout << ms_double.count() << "ms\n";
        // std::cout << p.pos << '\n';
@@ -218,6 +223,12 @@ void render() {
           glVertex3f(100.0f, 0.0f, 0.0f);
           glEnd();*/
     glColor3f(1.0f, 1.0f, 1.0f);
+
+    glBegin(GL_TRIANGLES);
+    glVertex3f(-30.0f, 0.0f, 60.0f); //p0
+    glVertex3f(-30.0f, 10.0f, 65.0f); //p1
+    glVertex3f(-30.0f, 0.0f, 70.0f); //p3
+    glEnd();
 
     //'infinite' white plane
     glBegin(GL_QUADS);

@@ -2,6 +2,7 @@
 #include "gl/glew.h"
 #include "GLFW/glfw3.h"
 #include "Constants.h"
+#include "Random.h"
 #include "ParticleGenerator.h"
 #include "Particle.h"
 #include "ParticleList.h"
@@ -23,9 +24,9 @@ float rotatey = 20.0f;
 float moveF = 0;
 GLFWwindow* window;
 Particle p =  Particle();
+Random random =  Random();
 std::vector<Polygon*> objects;
 ParticleList pL(1000);
-ParticleGenerator pG(Vector3f(0,100,0),10,0,50);
 SpatialHashGrid spg(Vector3f(200, 20, 200), 10, Vector3f (-100, 0, -100));
 
 int init();
