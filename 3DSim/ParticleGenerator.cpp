@@ -61,6 +61,7 @@ void ParticleGenerator::generateParticles(ParticleList& pL, float time, float ti
 			//add offset here
 			p.pos += p.vel * (f * timestep);
 			p.mass = 1.0f;
+			p.active = true;
 			pL.add(p);
 		}
 	}

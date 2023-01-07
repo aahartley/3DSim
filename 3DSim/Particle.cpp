@@ -10,7 +10,7 @@ Particle::Particle() {
 	this->oldAcc = acc;
 	this->oldVel = vel;
 	this->oldPos = pos;
-	this->active = true;
+	this->active = false;
 	this->radius = 0.3f;
 	this->age = 0.0f;
 

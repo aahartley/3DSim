@@ -10,6 +10,7 @@
 #include "ParticleCollision.h"
 #include "SpatialHashGrid.h"
 #include "Forces.h"
+#include "StateVector.h"
 
 #include <iostream>
 #include <thread>
@@ -27,7 +28,7 @@ GLFWwindow* window;
 Particle p =  Particle();
 Random random =  Random();
 std::vector<Polygon*> objects;
-ParticleList pL(1000);
+ParticleList pL;
 SpatialHashGrid spg(Vector3f(200, 20, 200), 10, Vector3f (-100, 0, -100));
 
 int init();

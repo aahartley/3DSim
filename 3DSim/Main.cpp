@@ -28,6 +28,7 @@ int main() {
     p.mass = 1.0f;
     p.pos = Vector3f(0.0f, 100.0f, 0.0f);
     p.vel = Vector3f(10.0f, 0.0f, 30.0f);
+    p.active = true;
 
     pL.add(p);
 
@@ -118,6 +119,8 @@ int main() {
     float deltaTime = 0.016f; // timestep
     float t = 0; //current time
     int n = 0; //iterations
+    StateVector sOld, sDeriv;
+    sOld = StateVector(pL);
     while (!glfwWindowShouldClose(window) && t <= 100)
     {
 
@@ -140,25 +143,24 @@ int main() {
 
         pG.generateParticles(pL, t, deltaTime);
         pL.testAndDeactivate();
+        sOld.update(pL);
         //render
         render();
         auto t1 = std::chrono::high_resolution_clock::now();
 
+        sDeriv = sOld.dynamics(pL,deltaTime);
+       // std::cout << sDeriv.state[0 + MAX_PARTICLES] << '\n';
+        
+       // pL.calcDeriv();
+  
         //integrate
+        StateVector sNew = sDeriv.integrate(sOld, deltaTime);
+        sNew.updatePL(pL, deltaTime);
         //#pragma omp parallel for num_threads(12)
-        for (int i = 0; i < pL.particles.size(); i++) {
+        for (int i = 0; i < MAX_PARTICLES; i++) {
             if (pL.particles[i].active) {
-                pL.particles[i].addForce(Forces::gravity(pL.particles[i]));
-   
-                pL.particles[i].integrate(deltaTime);
-                pL.particles[i].addForce(Forces::airResistance(pL.particles[i],0.4f)); //air resitance -dV
-                pL.particles[i].addForce(Forces::wind(pL.particles[i],-12.5,0,0,0.4f)); //wind Vwind-v
-               // pL.particles[i].addForce(Forces::potentialField(pL.particles[i], 10.0f, Vector3f(-35, 0, 65), 2, 10.0f));
-                //pL.particles[i].addForce(Forces::steering(pL.particles[i], Vector3f(-35, 0, 65), 10.0f));
-               // pL.particles[i].addForce(Forces::gravPoint(pL.particles[i],100.0f,Vector3f(0,10,0),2));
-               // pL.particles[i].addForce(Forces::gravLine(pL.particles[i], Vector3f(0, 10, 0), Vector3f(0, 0, 1), 10.0f, 100.0f, 2));
-                //pL.particles[i].addForce(Forces::randForce(pL.particles[i], random, deltaTime, 5.0f));
-                //Forces::limitVelMin(pL.particles[i], 10.0f);
+                //pL.particles[i].integrate(deltaTime);
+
           /*      ParticleCollision pc(pL.particles[i]);
                 for (int j = 0; j < objects.size(); j++) {
                     if (pc.ParticleDetection(*objects[j])) {
@@ -172,7 +174,8 @@ int main() {
 
             }
         }
-      
+        sNew.update(pL);
+        sOld = sNew;
      
         auto t2 = std::chrono::high_resolution_clock::now();
 
@@ -223,9 +226,9 @@ void render() {
     glColor3f(1.0f, 0.0f, 0.0f);          // Set The Color To Red
     glBegin(GL_POINTS);
     // std::cout << p->pos.x << ' '<< p->pos.y <<' '<< p->pos.z << '\n';
-    for (Particle p : pL.particles) {
-        if(p.active)
-            glVertex3f(p.pos.x, p.pos.y, p.pos.z);
+    for (int i = 0; i < MAX_PARTICLES; i++) {
+        if(pL.particles[i].active)
+            glVertex3f(pL.particles[i].pos.x, pL.particles[i].pos.y, pL.particles[i].pos.z);
     }
     glEnd();
     /*      glBegin(GL_LINES);
