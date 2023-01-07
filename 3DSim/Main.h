@@ -9,6 +9,7 @@
 #include "Polygon.h"
 #include "ParticleCollision.h"
 #include "SpatialHashGrid.h"
+#include "Forces.h"
 
 #include <iostream>
 #include <thread>

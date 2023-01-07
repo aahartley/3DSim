@@ -7,7 +7,7 @@ void test() {
     p->vel = Vector3f(10.0f, 0.0f, 30.0f);
     std::cout << p->pos.x << ' ' << p->pos.y << ' ' << p->pos.z << '\n';
     for (int i = 0; i < 5; i++) {
-        p->addForce(Vector3f(0.0f, -10.0f * p->mass, 0.0f));
+        p->addForce(Vector3f(0.0f, -10.0f * p->mass, 0.0f)); //gravity
         p->integrate(1);
         p->addForce(p->vel * -0.4f); //air resitance -dV
         p->addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
@@ -27,7 +27,7 @@ int main() {
 
     p.mass = 1.0f;
     p.pos = Vector3f(0.0f, 100.0f, 0.0f);
-    p.vel = Vector3f(0.0f, 0.0f, 0.0f);
+    p.vel = Vector3f(10.0f, 0.0f, 30.0f);
 
     pL.add(p);
 
@@ -103,12 +103,12 @@ int main() {
 
     //objects.push_back(infinitePlane);
     objects.push_back(finitePlane);
-    //objects.push_back(finitePlane2);
+    objects.push_back(finitePlane2);
     objects.push_back(finitePlane3);
     objects.push_back(finitePlane4);
     objects.push_back(finitePlane5);
     objects.push_back(finitePlane6);
-    objects.push_back(triangle);
+    //objects.push_back(triangle);
 
     spg.initializeGrid(objects);
 
@@ -148,17 +148,27 @@ int main() {
         //#pragma omp parallel for num_threads(12)
         for (int i = 0; i < pL.particles.size(); i++) {
             if (pL.particles[i].active) {
-                pL.particles[i].addForce(Vector3f(0.0f, -10.0f * pL.particles[i].mass, 0.0f));
+                pL.particles[i].addForce(Forces::gravity(pL.particles[i]));
+   
                 pL.particles[i].integrate(deltaTime);
-                pL.particles[i].addForce(pL.particles[i].vel * -0.4f); //air resitance -dV
-                //pL.particles[i].addForce(Vector3f(-12.5f, 0, 0) * 0.4f); //wind Vwind-v
-                spg.checkCollision(pL.particles[i]);
-             /*   ParticleCollision pc(pL.particles[i]);
+                pL.particles[i].addForce(Forces::airResistance(pL.particles[i],0.4f)); //air resitance -dV
+                pL.particles[i].addForce(Forces::wind(pL.particles[i],-12.5,0,0,0.4f)); //wind Vwind-v
+               // pL.particles[i].addForce(Forces::potentialField(pL.particles[i], 10.0f, Vector3f(-35, 0, 65), 2, 10.0f));
+                //pL.particles[i].addForce(Forces::steering(pL.particles[i], Vector3f(-35, 0, 65), 10.0f));
+               // pL.particles[i].addForce(Forces::gravPoint(pL.particles[i],100.0f,Vector3f(0,10,0),2));
+               // pL.particles[i].addForce(Forces::gravLine(pL.particles[i], Vector3f(0, 10, 0), Vector3f(0, 0, 1), 10.0f, 100.0f, 2));
+                //pL.particles[i].addForce(Forces::randForce(pL.particles[i], random, deltaTime, 5.0f));
+                //Forces::limitVelMin(pL.particles[i], 10.0f);
+          /*      ParticleCollision pc(pL.particles[i]);
                 for (int j = 0; j < objects.size(); j++) {
                     if (pc.ParticleDetection(*objects[j])) {
                         pc.ParticleResponse(*objects[j]);
                     }
                 }*/
+        /*        if(pL.particles[i].pos.y<1)
+                 std::cout << pL.particles[i].pos << '\n';*/
+
+                spg.checkCollision(pL.particles[i]);
 
             }
         }
@@ -169,8 +179,8 @@ int main() {
         /* Getting number of milliseconds as a double. */
         std::chrono::duration<double, std::milli> ms_double = t2 - t1;
 
-        std::cout << ms_double.count() << "ms\n";
-       // std::cout << p.pos << '\n';
+       // std::cout << ms_double.count() << "ms\n";
+      //  std::cout << pL.particles[0].pos << '\n';
         
         // Swap front and back buffers 
         glfwSwapBuffers(window);
@@ -224,11 +234,11 @@ void render() {
           glEnd();*/
     glColor3f(1.0f, 1.0f, 1.0f);
 
-    glBegin(GL_TRIANGLES);
-    glVertex3f(-30.0f, 0.0f, 60.0f); //p0
-    glVertex3f(-30.0f, 10.0f, 65.0f); //p1
-    glVertex3f(-30.0f, 0.0f, 70.0f); //p3
-    glEnd();
+    //glBegin(GL_TRIANGLES);
+    //glVertex3f(-30.0f, 0.0f, 60.0f); //p0
+    //glVertex3f(-30.0f, 10.0f, 65.0f); //p1
+    //glVertex3f(-30.0f, 0.0f, 70.0f); //p3
+    //glEnd();
 
     //'infinite' white plane
     glBegin(GL_QUADS);

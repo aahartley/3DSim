@@ -170,7 +170,9 @@ void SpatialHashGrid::checkCollision(Particle& p) {
 	fixLoop(i, xmax, j, ymax, k, zmax);
 
 
-	if ((z < depth && y < height && x < width && z >= 0 && y >= 0 && x >= 0) || (z2 < depth && y2 < height && x2 < width && z2 >= 0 && y2 >= 0 && x2 >= 0)) {
+	//if ((z < depth && y < height && x < width && z >= 0 && y >= 0 && x >= 0) || (z2 < depth && y2 < height && x2 < width && z2 >= 0 && y2 >= 0 && x2 >= 0)) {
+	if ((zmax < depth && ymax < height && xmax < width && k >= 0 && j >= 0 && i >= 0) ) {
+
 		//std::cout << "hit" << '\n';
 		std::vector<Voxel> voxelsInPath;
 		for (int zz = k; zz < zmax; zz++) {

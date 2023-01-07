@@ -66,7 +66,7 @@ struct Plane: public Polygon {
 	Vector3f origin;
 	//boudnign box add
 	float cr = 0.5f;
-	float cf = 0.1f;
+	float cf = 0.0f;
 	float xmin = 0;
 	float xmax = 0;
 	float ymin = 0;

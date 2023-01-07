@@ -5,10 +5,10 @@ bool ParticleCollision::ParticleDetection(Polygon& poly) {
         Plane plane = (Plane&)poly;
         normal = plane.surfaceNormal;
         dn = (p->oldPos - plane.vertices[0]).dot(normal);
-        dn > 0 ? dn -= 0.3f : dn += 0.3f;
-
+        dn > EPSILON ? dn -= 0.3f : dn += 0.3f; 
+        
         dn1 = (p->pos - plane.vertices[0]).dot(normal);
-        dn1 > 0 ? dn1 -= 0.3f : dn1 += 0.3f;
+        dn1 > EPSILON ? dn1 -= 0.3f : dn1 += 0.3f;
         Vec2 xHit;
         
         ////check to see if sign changed (above or below plane)
@@ -87,6 +87,7 @@ bool ParticleCollision::ParticleDetection(Polygon& poly) {
             float v = ((triangle.vertices[0] - triangle.vertices[2]).cross((hit - triangle.vertices[2]))).dot(normal) / triangle.surfaceNormal.magnitude();
             float w = 1 - u - v;
             if (u >= 0 && v >= 0 && u + v <= 1)return true;
+            else return false;
         }
         else return false;
     }
@@ -100,6 +101,8 @@ void ParticleCollision::ParticleResponse(Polygon& poly) {
     if (poly.getType() == PLANE) {
         Plane plane = (Plane&)poly;
         p->pos = p->pos  - normal * (1 + plane.cr) * dn1;
+        if (p->pos.y < 0)p->pos.y =0+ p->radius;
+    
         Vector3f vN = normal * (p->vel.dot(normal));
         Vector3f vT = p->vel - vN;
         p->vel = (vN * -plane.cr) + (vT * (1 - plane.cf));
