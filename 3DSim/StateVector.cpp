@@ -27,9 +27,9 @@ void StateVector::update(ParticleList& pL) {
 	}
 }
 
-Vector3f StateVector::environmentForces(ParticleList& pL, StateVector& sOld, int i, float dt) {
+Vector3f StateVector::environmentForces(ParticleList& pL, StateVector& sOld, int i, float time) {
 	Vector3f sumForces;
-		sumForces += Forces::gravity(pL.particles[i]);
+		//sumForces += Forces::gravity(pL.particles[i]);
 		if (sOld.state[i+MAX_PARTICLES].magnitude() >= 0.0) {
 			
 			sumForces += Forces::airResistance(pL.particles[i], 0.4f); //air resitance -dV
@@ -39,21 +39,39 @@ Vector3f StateVector::environmentForces(ParticleList& pL, StateVector& sOld, int
 	return sumForces;
 }
 
+Vector3f StateVector::particleForces(ParticleList& pL, StateVector& sOld, int i, int j, float time) {
+	Vector3f dist = pL.particles[j].pos - pL.particles[i].pos;
+	
+	return (dist.unitVector() * ((pL.particles[i].mass * pL.particles[j].mass) / std::pow(dist.magnitude(), 2)) * G);
+}
 StateVector StateVector::integrate(StateVector& sOld, float dt) {
 	StateVector sNew;
 	sNew = sOld + *this * dt;
 	return sNew;
 }
-StateVector StateVector::getDerivatives(ParticleList& pL,float dt) {
+StateVector StateVector::getDerivatives(ParticleList& pL,float time) {
 	StateVector sDeriv;
+	Vector3f forceJI;
 
 	for (int i = 0; i < MAX_PARTICLES; i++) {
-		sDeriv.state[i+MAX_PARTICLES] = environmentForces(pL, *this, i, dt) * pL.particles[i].invM;
+		sDeriv.state[i+MAX_PARTICLES] = environmentForces(pL, *this, i, time) * pL.particles[i].invM;
+	}
+	//#pragma omp parallel for num_threads(12)
+	for (int i = 0; i < MAX_PARTICLES - 1; i++) {
+		if (pL.particles[i].active) {
+			for (int j = i + 1; j < MAX_PARTICLES; j++) {
+				if (pL.particles[j].active) {
+					forceJI = particleForces(pL, *this, i, j, time);
+					sDeriv.state[i + MAX_PARTICLES] = sDeriv.state[i + MAX_PARTICLES] + (forceJI * pL.particles[i].invM);
+					sDeriv.state[j + MAX_PARTICLES] = sDeriv.state[j + MAX_PARTICLES] - (forceJI * pL.particles[j].invM);
+				}
+			}
+		}
 	}
 	return sDeriv;
 }
-StateVector StateVector::dynamics(ParticleList& pL, float dt) {
-	StateVector sDeriv = getDerivatives(pL, dt);
+StateVector StateVector::dynamics(ParticleList& pL, float time) {
+	StateVector sDeriv = getDerivatives(pL, time);
 	for (int i = 0; i < MAX_PARTICLES; i++) {
 		sDeriv.state[i] = this->state[i+MAX_PARTICLES];
 		pL.particles[i].oldVel = this->state[i + MAX_PARTICLES];

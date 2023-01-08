@@ -10,5 +10,5 @@ const float EPSILON = 0.001f;
 const float PI = 3.14159265359f;
 const float G = 6.6743f; //lol, one day ill scale it to pixels
 const float GRAVITY = 10.0f;
-const int MAX_PARTICLES = 1000;
+const int MAX_PARTICLES = 100;
 

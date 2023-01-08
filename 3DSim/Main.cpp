@@ -23,7 +23,7 @@ int main() {
     //test();
     if(init()<0)return -1;
     random.populateRand(1000);
-    ParticleGenerator pG(Vector3f(0, 100, 0), 100, 0, 50,random);
+    ParticleGenerator pG(Vector3f(0, 100, 0), 10, 0, 50,random);
 
     p.mass = 1.0f;
     p.pos = Vector3f(0.0f, 100.0f, 0.0f);
@@ -183,8 +183,8 @@ int main() {
         std::chrono::duration<double, std::milli> ms_double = t2 - t1;
 
        // std::cout << ms_double.count() << "ms\n";
-      //  std::cout << pL.particles[0].pos << '\n';
-        
+      // std::cout << pL.particles[0].pos << '\n';
+       
         // Swap front and back buffers 
         glfwSwapBuffers(window);
         n++;

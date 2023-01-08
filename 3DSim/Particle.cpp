@@ -71,5 +71,5 @@ void Particle::integrate(float dt) {
 }
 
 void Particle::testAndDeactivate() {
-	if (age > 100)active = false;
+	if (age > 10)active = false;
 }

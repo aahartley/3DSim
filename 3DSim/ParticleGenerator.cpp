@@ -50,17 +50,20 @@ void ParticleGenerator::generateParticles(ParticleList& pL, float time, float ti
 			//}
 
 			//from sphere
-			Vector3f randU = rand.randUVSphere();
-			Vector3f center(-30, 100, 60);
-			float radius = 5.0f;
-			float radiusF = std::cbrtf(f) * radius;
-			//p.pos = center + randU * radius;//outside sphere
-			p.pos = center + randU * radiusF;
-			p.vel = rand.randUVUniformW(randU, delta / 3);
+			//Vector3f randU = rand.randUVSphere();
+			//Vector3f center(0, 10, 0);
+			//float radius = 5.0f;
+			//float radiusF = std::cbrtf(f) * radius;
+			////p.pos = center + randU * radius;//outside sphere
+			//p.pos = center + randU * radiusF;
+			//p.vel = rand.randUVUniformW(randU, delta / 3);
 
+			//rand pos
+			p.pos = Vector3f(rand.createRandUniform(-100, 100), rand.createRandUniform(0, 100), rand.createRandUniform(-100, 100));
+			p.vel = Vector3f(1, 1, 1);
 			//add offset here
 			p.pos += p.vel * (f * timestep);
-			p.mass = 1.0f;
+			p.mass = rand.randUniform(1,500);
 			p.active = true;
 			pL.add(p);
 		}
